@@ -49,7 +49,7 @@ public class PurchaseHelper: ObservableObject {
     }
     
     /// Determine if a given product has been purchased.
-    func isPurchased(_ product: ProductRepresentable) -> Bool {
+    public func isPurchased(_ product: ProductRepresentable) -> Bool {
         guard purchasesSynced else {
             print("PurchaseHelper purchases not synced yet. Call syncPurchases() first")
             return false
@@ -59,7 +59,7 @@ public class PurchaseHelper: ObservableObject {
     
     /// Get `StoreKit`product for given app product.
     /// Make sure `fetchAndSync` or `fetchProducts` is called before that
-    func getProduct(_ product: ProductRepresentable) -> Product? {
+    public func getProduct(_ product: ProductRepresentable) -> Product? {
         guard productsFetched else {
             print("PurchaseHelper products not fetched yet. Call fetchProducts() first")
             return nil
@@ -69,7 +69,7 @@ public class PurchaseHelper: ObservableObject {
     
     /// Will initialize and handle fetching products and syncing purchases sequentially.
     /// Suggested to call this when view appears as it will guarantee `purchasesReady` to end up being `true`
-    func fetchAndSync() {
+    public func fetchAndSync() {
         guard !loadingInProgress else {
             print("PurchaseHelper purchase is in progress, fetchAndSync() ignored")
             return
@@ -108,7 +108,7 @@ public class PurchaseHelper: ObservableObject {
     
     /// Fetches products from the store. You can then retrieve a product by calling `getProduct()`
     /// - While the process is in progress, `loadingInProgress` will be `true`
-    func fetchProducts() {
+    public func fetchProducts() {
         guard !loadingInProgress else {
             print("PurchaseHelper purchase is in progress, fetchProducts() ignored")
             return
@@ -132,7 +132,7 @@ public class PurchaseHelper: ObservableObject {
     
     /// Synch owned purchases (entitlements) from the store
     /// - While the process is in progress, `loadingInProgress` will be `true`
-    func syncPurchases() {
+    public func syncPurchases() {
         guard !loadingInProgress else {
             print("PurchaseHelper purchase is in progress, syncPurchases() ignored")
             return
@@ -155,7 +155,7 @@ public class PurchaseHelper: ObservableObject {
     
     /// Init purchase of a given product, with optionally provided `options`
     /// - While the process is in progress, `loadingInProgress` will be `true`
-    func purchase(_ product: ProductRepresentable, options: Set<Product.PurchaseOption> = []) {
+    public func purchase(_ product: ProductRepresentable, options: Set<Product.PurchaseOption> = []) {
         guard !loadingInProgress else {
             print("PurchaseHelper purchase is in progress, purchase() ignored")
             return
