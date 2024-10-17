@@ -9,6 +9,11 @@ import Foundation
 import StoreKit
 
 internal class StoreKitCommunicator {
+    private let autoFinishTransactions: Bool
+    
+    init(autoFinishTransactions: Bool) {
+        self.autoFinishTransactions = autoFinishTransactions
+    }
     
     func fetchProductsAsync(productIds: [String], callback: ([Product]?, Error?) -> Void) async {
         do {
@@ -25,8 +30,10 @@ internal class StoreKitCommunicator {
         var newPurchasedProductIds: [String] = []
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result {
+                if autoFinishTransactions {
+                    await transaction.finish()
+                }
                 newPurchasedProductIds.append(transaction.productID)
-                await transaction.finish()
             }
         }
         print("PurchaseHelper syncPurchases complete, purchased products: \(newPurchasedProductIds)")
@@ -41,7 +48,9 @@ internal class StoreKitCommunicator {
                 switch verification {
                 case .verified(let transaction):
                     print("PurchaseHelper transaction verified for \(transaction.productID)")
-                    await transaction.finish()
+                    if autoFinishTransactions {
+                        await transaction.finish()
+                    }
                     callback(transaction.productID)
                 case .unverified:
                     print("PurchaseHelper transaction unverified")
@@ -67,8 +76,10 @@ internal class StoreKitCommunicator {
         for await result in Transaction.updates {
             if case .verified(let transaction) = result {
                 print("PurchaseHelper transaction updated outside the app: \(transaction.productID)")
+                if autoFinishTransactions {
+                    await transaction.finish()
+                }
                 callback(transaction.productID)
-                await transaction.finish()
             }
         }
     }

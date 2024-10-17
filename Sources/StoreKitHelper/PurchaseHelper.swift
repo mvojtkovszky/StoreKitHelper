@@ -27,15 +27,19 @@ public class PurchaseHelper: ObservableObject {
     @Published private var products: [Product] = [] // StoreKit products
     
     private let allProductIds: [String]
-    private let storeKitCommunicator = StoreKitCommunicator()
+    private let storeKitCommunicator: StoreKitCommunicator
     
     
     /// Initialize helper
     /// - Parameters:
-    ///   - productIds: all product ids supported by the app.
-    ///   - listenForUpdates: if set to true, listen for transaction updates otside of the app. this can generally be omitted If you call `fetchAndSync` every time main view appears,
-    init(products: [ProductRepresentable]) {
+    ///   - products: all product ids supported by the app.
+    ///   - autoFinishTransactions: call `Transaction.finish()` on verified transactions. `true` by default. Let it be unless you verify your transaction on own backend.
+    public init(
+        products: [ProductRepresentable],
+        autoFinishTransactions: Bool = true
+    ) {
         self.allProductIds = products.map { $0.getId() }
+        self.storeKitCommunicator = StoreKitCommunicator(autoFinishTransactions: autoFinishTransactions)
         
         Task {
             await storeKitCommunicator.listenForTransactionUpdatesAsync { _ in
@@ -63,7 +67,7 @@ public class PurchaseHelper: ObservableObject {
         return products.first { $0.id == product.getId() }
     }
     
-    /// Will initialize and handle fetching products and syncing purchases
+    /// Will initialize and handle fetching products and syncing purchases sequentially.
     /// Suggested to call this when view appears as it will guarantee `purchasesReady` to end up being `true`
     func fetchAndSync() {
         guard !loadingInProgress else {
@@ -102,7 +106,7 @@ public class PurchaseHelper: ObservableObject {
         }
     }
     
-    /// Fetches products from the store.
+    /// Fetches products from the store. You can then retrieve a product by calling `getProduct()`
     /// - While the process is in progress, `loadingInProgress` will be `true`
     func fetchProducts() {
         guard !loadingInProgress else {
@@ -149,8 +153,7 @@ public class PurchaseHelper: ObservableObject {
         }
     }
     
-    /// Init purchase of product
-    /// - Before the process starts, `purchaseFlowSuccess` will be set to `false` and set to `true` only upon successful purchase.
+    /// Init purchase of a given product, with optionally provided `options`
     /// - While the process is in progress, `loadingInProgress` will be `true`
     func purchase(_ product: ProductRepresentable, options: Set<Product.PurchaseOption> = []) {
         guard !loadingInProgress else {
