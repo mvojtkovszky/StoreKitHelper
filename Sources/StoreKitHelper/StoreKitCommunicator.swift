@@ -8,7 +8,7 @@
 import Foundation
 import StoreKit
 
-internal class StoreKitCommunicator {
+final internal class StoreKitCommunicator: Sendable {
     private let autoFinishTransactions: Bool
     
     init(autoFinishTransactions: Bool) {
