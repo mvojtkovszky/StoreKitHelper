@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.1.1 (2024-10-17)
+* Ensure functions intended to be public are indeed public :)
+* Add `autoFinishTransactions` option to init.
+* Improve documentation and examples in README.md 
+
 ## 0.1.0 (2024-10-17)
 * Initial Release
 

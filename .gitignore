@@ -1,0 +1,96 @@
+# Xcode
+#
+DerivedData/
+build/
+*.xcworkspace
+!default.xcworkspace
+xcuserdata/
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcworkspace/contents.xcworkspacedata
+*.xcuserstate
+*.xcscmblueprint
+*.swifttemplate
+
+# Swift Package Manager
+#
+.build/
+Packages/
+Package.pins
+.swiftpm/xcode/package.xcworkspace/
+.swiftpm/xcode/xcshareddata/
+
+# CocoaPods
+#
+Pods/
+Podfile.lock
+Podfile/.swift-version
+
+# Carthage
+#
+Carthage/Build/
+
+# Fastlane
+#
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/tests_output
+
+# Xcode Specific
+#
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcarchive
+.xcresult/
+
+# Playgrounds
+#
+timeline.xctimeline
+playground.xcworkspace
+
+# Shared frameworks
+#
+Carthage/Build
+Carthage/Checkouts
+
+# Generated Files
+#
+*.rpt
+*.sav
+
+# App packaging
+#
+*.pmdoc
+
+# SwiftPM Binary Artifacts
+.xcframeworks/
+
+# Temporary files
+#
+*.tmp
+*.temp
+*.swp
+*.swo
+*.DS_Store
+*.class
+*.lock
+
+# Testing
+#
+test_output/
+
+# Environment specific files
+#
+.vscode/
+.env
+
+# Editor specific
+#
+.idea/
+*.iml

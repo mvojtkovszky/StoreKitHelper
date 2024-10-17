@@ -6,5 +6,6 @@
 //
 
 public protocol ProductRepresentable {
+    /// Identifier for a product
     func getId() -> String
 }
