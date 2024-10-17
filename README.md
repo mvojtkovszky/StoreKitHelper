@@ -20,7 +20,7 @@ enum AppProduct: String, CaseIterable, ProductRepresentable {
 }
 ```
 
-2. Initialize `PurchaseHelper`
+2. Initialize `PurchaseHelper`, your MainView may look something like this:
 
 ```swift
 struct MainView: View {
@@ -34,6 +34,9 @@ struct MainView: View {
         .onAppear {
             // this will handle fetching purchases and syncing owned purchases
             purchaseHelper.fetchAndSync()
+        }
+        .onChange(of: purchaseHelper.purchasesReady) { newValue in
+            // do something when products are fetched and purchases synced. That's when it's safe to definitively evaluate if user actually has any entitlements
         }
     }
 }

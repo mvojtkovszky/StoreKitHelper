@@ -15,18 +15,18 @@ internal class StoreKitCommunicator {
         self.autoFinishTransactions = autoFinishTransactions
     }
     
-    func fetchProductsAsync(productIds: [String], callback: ([Product]?, Error?) -> Void) async {
+    func fetchProductsAsync(productIds: [String]) async -> [Product]? {
         do {
             let products = try await Product.products(for: productIds)
-            print("PurchaseHelper products have been fetched \(products.map({ $0.id }))")
-            callback(products, nil)
+            print("PurchaseHelper products have been fetched \(products.map { $0.id })")
+            return products
         } catch {
             print("PurchaseHelper Error fetching products: \(error)")
-            callback(nil, error)
+            return nil
         }
     }
     
-    func syncPurchasesAsync(callback: ([String]) -> Void) async {
+    func syncPurchasesAsync() async -> [String] {
         var newPurchasedProductIds: [String] = []
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result {
@@ -37,10 +37,10 @@ internal class StoreKitCommunicator {
             }
         }
         print("PurchaseHelper syncPurchases complete, purchased products: \(newPurchasedProductIds)")
-        callback(newPurchasedProductIds)
+        return newPurchasedProductIds
     }
     
-    func purchaseAsync(product: Product, options: Set<Product.PurchaseOption> = [], callback: (String?) -> Void) async {
+    func purchaseAsync(product: Product, options: Set<Product.PurchaseOption> = []) async -> String? {
         do {
             let result = try await product.purchase(options: options)
             switch result {
@@ -51,36 +51,37 @@ internal class StoreKitCommunicator {
                     if autoFinishTransactions {
                         await transaction.finish()
                     }
-                    callback(transaction.productID)
+                    return transaction.productID
                 case .unverified:
                     print("PurchaseHelper transaction unverified")
-                    callback(nil)
+                    return nil
                 }
             case .userCancelled:
                 print("PurchaseHelper user canceled the purchase")
-                callback(nil)
+                return nil
             case .pending:
                 print("PurchaseHelper purchase pending")
-                callback(nil)
+                return nil
             @unknown default:
                 print("PurchaseHelper encountered an unknown purchase result")
-                callback(nil)
+                return nil
             }
         } catch {
             print("PurchaseHelper failed: \(error)")
-            callback(nil)
+            return nil
         }
     }
     
-    func listenForTransactionUpdatesAsync(callback: (String) -> Void) async {
+    func listenForTransactionUpdatesAsync() async -> String? {
         for await result in Transaction.updates {
             if case .verified(let transaction) = result {
                 print("PurchaseHelper transaction updated outside the app: \(transaction.productID)")
                 if autoFinishTransactions {
                     await transaction.finish()
                 }
-                callback(transaction.productID)
+                return transaction.productID
             }
         }
+        return nil
     }
 }
