@@ -1,5 +1,5 @@
 //
-//  StoreKitHelper.swift
+//  PurchaseHelper.swift
 //  StoreKitHelper
 //
 //  Created by Marcel Vojtkovszky on 2024-10-17.
