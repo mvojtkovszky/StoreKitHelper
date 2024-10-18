@@ -42,9 +42,8 @@ public class PurchaseHelper: ObservableObject {
         self.storeKitCommunicator = StoreKitCommunicator(autoFinishTransactions: autoFinishTransactions)
         
         Task {
-            await storeKitCommunicator.listenForTransactionUpdatesAsync { _ in
-                // result can be ignored, we just wanted to finish the transaction
-            }
+            // result can be ignored, we just wanted to finish the transaction
+            let _ = await storeKitCommunicator.listenForTransactionUpdatesAsync()
         }
     }
     
@@ -67,11 +66,12 @@ public class PurchaseHelper: ObservableObject {
         return products.first { $0.id == product.getId() }
     }
     
-    /// Will initialize and handle fetching products and syncing purchases sequentially.
-    /// Suggested to call this when view appears as it will guarantee `purchasesReady` to end up being `true`
+    /// Will initialize and handle fetching products and syncing purchases.
+    /// Suggested to call this when view appears as it will guarantee as it will result in `productsFetched` and `purchasesSynced` being true.
+    /// Note: Products will not be fetched if already fetched before, but purchases will always be re-evaluated.
     public func fetchAndSync() {
         guard !loadingInProgress else {
-            print("PurchaseHelper purchase is in progress, fetchAndSync() ignored")
+            print("PurchaseHelper loading is in progress, fetchAndSync() ignored")
             return
         }
         
@@ -81,26 +81,20 @@ public class PurchaseHelper: ObservableObject {
         let productIds = self.allProductIds
         
         Task {
-            if willFetchProducts {
-                await storeKitCommunicator.fetchProductsAsync(productIds: productIds) { products, error in
-                    updateUI { [weak self] in
-                        guard let self = self else { return }
-                        if let products {
-                            self.products = products
-                            self.productsFetched = true
-                        }
-                    }
-                }
-            }
-            await storeKitCommunicator.syncPurchasesAsync { ids in
-                updateUI { [weak self] in
-                    guard let self = self else { return }
-                    self.purchasedProductIds = ids
-                    self.purchasesSynced = true
-                }
-            }
+            async let fetchTask: [Product]? = willFetchProducts ? storeKitCommunicator.fetchProductsAsync(productIds: productIds) : nil
+            async let syncTask: [String] = storeKitCommunicator.syncPurchasesAsync()
+            
+            let fetchedProducts = await fetchTask
+            let syncedIds = await syncTask
+            
             updateUI { [weak self] in
                 guard let self = self else { return }
+                if let products = fetchedProducts {
+                    self.products = products
+                    self.productsFetched = true
+                }
+                self.purchasedProductIds = syncedIds
+                self.purchasesSynced = true
                 self.loadingInProgress = false
             }
         }
@@ -110,7 +104,7 @@ public class PurchaseHelper: ObservableObject {
     /// - While the process is in progress, `loadingInProgress` will be `true`
     public func fetchProducts() {
         guard !loadingInProgress else {
-            print("PurchaseHelper purchase is in progress, fetchProducts() ignored")
+            print("PurchaseHelper loading is in progress, fetchProducts() ignored")
             return
         }
         
@@ -119,13 +113,12 @@ public class PurchaseHelper: ObservableObject {
         let productIds = self.allProductIds
         
         Task {
-            await storeKitCommunicator.fetchProductsAsync(productIds: productIds) { products, error in
-                updateUI { [weak self] in
-                    guard let self = self else { return }
-                    self.products = products ?? []
-                    self.productsFetched = true
-                    self.loadingInProgress = false
-                }
+            let products = await storeKitCommunicator.fetchProductsAsync(productIds: productIds)
+            updateUI { [weak self] in
+                guard let self = self else { return }
+                self.products = products ?? []
+                self.productsFetched = true
+                self.loadingInProgress = false
             }
         }
     }
@@ -134,7 +127,7 @@ public class PurchaseHelper: ObservableObject {
     /// - While the process is in progress, `loadingInProgress` will be `true`
     public func syncPurchases() {
         guard !loadingInProgress else {
-            print("PurchaseHelper purchase is in progress, syncPurchases() ignored")
+            print("PurchaseHelper loading is in progress, syncPurchases() ignored")
             return
         }
         
@@ -142,13 +135,12 @@ public class PurchaseHelper: ObservableObject {
         self.loadingInProgress = true
         
         Task {
-            await storeKitCommunicator.syncPurchasesAsync { ids in
-                updateUI { [weak self] in
-                    guard let self = self else { return }
-                    self.purchasedProductIds = ids
-                    self.purchasesSynced = true
-                    self.loadingInProgress = false
-                }
+            let purchasedProductIds = await storeKitCommunicator.syncPurchasesAsync()
+            updateUI { [weak self] in
+                guard let self = self else { return }
+                self.purchasedProductIds = purchasedProductIds
+                self.purchasesSynced = true
+                self.loadingInProgress = false
             }
         }
     }
@@ -157,7 +149,7 @@ public class PurchaseHelper: ObservableObject {
     /// - While the process is in progress, `loadingInProgress` will be `true`
     public func purchase(_ product: ProductRepresentable, options: Set<Product.PurchaseOption> = []) {
         guard !loadingInProgress else {
-            print("PurchaseHelper purchase is in progress, purchase() ignored")
+            print("PurchaseHelper loading is in progress, purchase() ignored")
             return
         }
         
@@ -166,14 +158,13 @@ public class PurchaseHelper: ObservableObject {
         
         if let storeProduct = getProduct(product) {
             Task {
-                await storeKitCommunicator.purchaseAsync(product: storeProduct, options: options) { productId in
-                    updateUI { [weak self] in
-                        guard let self = self else { return }
-                        if let productId, !self.purchasedProductIds.contains(productId) {
-                            self.purchasedProductIds.append(productId)
-                        }
-                        self.loadingInProgress = false
+                let productId = await storeKitCommunicator.purchaseAsync(product: storeProduct, options: options)
+                updateUI { [weak self] in
+                    guard let self = self else { return }
+                    if let productId, !self.purchasedProductIds.contains(productId) {
+                        self.purchasedProductIds.append(productId)
                     }
+                    self.loadingInProgress = false
                 }
             }
         } else {
