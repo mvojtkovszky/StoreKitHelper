@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## 0.1.3 (TBD)
+
 ## 0.1.2 (2024-10-18)
 * Better use of async context, `fetchAndSync()` significantly faster as a result.
 * Improve documentation and examples in README.md 
