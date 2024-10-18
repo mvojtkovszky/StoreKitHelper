@@ -66,11 +66,12 @@ public class PurchaseHelper: ObservableObject {
         return products.first { $0.id == product.getId() }
     }
     
-    /// Will initialize and handle fetching products and syncing purchases sequentially.
-    /// Suggested to call this when view appears as it will guarantee `purchasesReady` to end up being `true`
+    /// Will initialize and handle fetching products and syncing purchases.
+    /// Suggested to call this when view appears as it will guarantee as it will result in `productsFetched` and `purchasesSynced` being true.
+    /// Note: Products will not be fetched if already fetched before, but purchases will always be re-evaluated.
     public func fetchAndSync() {
         guard !loadingInProgress else {
-            print("PurchaseHelper purchase is in progress, fetchAndSync() ignored")
+            print("PurchaseHelper loading is in progress, fetchAndSync() ignored")
             return
         }
         
@@ -103,7 +104,7 @@ public class PurchaseHelper: ObservableObject {
     /// - While the process is in progress, `loadingInProgress` will be `true`
     public func fetchProducts() {
         guard !loadingInProgress else {
-            print("PurchaseHelper purchase is in progress, fetchProducts() ignored")
+            print("PurchaseHelper loading is in progress, fetchProducts() ignored")
             return
         }
         
@@ -126,7 +127,7 @@ public class PurchaseHelper: ObservableObject {
     /// - While the process is in progress, `loadingInProgress` will be `true`
     public func syncPurchases() {
         guard !loadingInProgress else {
-            print("PurchaseHelper purchase is in progress, syncPurchases() ignored")
+            print("PurchaseHelper loading is in progress, syncPurchases() ignored")
             return
         }
         
@@ -148,7 +149,7 @@ public class PurchaseHelper: ObservableObject {
     /// - While the process is in progress, `loadingInProgress` will be `true`
     public func purchase(_ product: ProductRepresentable, options: Set<Product.PurchaseOption> = []) {
         guard !loadingInProgress else {
-            print("PurchaseHelper purchase is in progress, purchase() ignored")
+            print("PurchaseHelper loading is in progress, purchase() ignored")
             return
         }
         
