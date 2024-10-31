@@ -72,16 +72,17 @@ final internal class StoreKitCommunicator: Sendable {
         }
     }
     
-    func listenForTransactionUpdatesAsync() async -> String? {
+    func listenForTransactionUpdatesAsync() async -> [String] {
+        var verifiedProductIdsOutsideTheApp: [String] = []
         for await result in Transaction.updates {
             if case .verified(let transaction) = result {
                 print("PurchaseHelper transaction updated outside the app: \(transaction.productID)")
                 if autoFinishTransactions {
                     await transaction.finish()
                 }
-                return transaction.productID
+                verifiedProductIdsOutsideTheApp.append(transaction.productID)
             }
         }
-        return nil
+        return verifiedProductIdsOutsideTheApp
     }
 }

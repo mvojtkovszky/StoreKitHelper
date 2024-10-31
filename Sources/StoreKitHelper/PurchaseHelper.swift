@@ -42,8 +42,15 @@ public class PurchaseHelper: ObservableObject {
         self.storeKitCommunicator = StoreKitCommunicator(autoFinishTransactions: autoFinishTransactions)
         
         Task {
-            // result can be ignored, we just wanted to finish the transaction
-            let _ = await storeKitCommunicator.listenForTransactionUpdatesAsync()
+            // listen for updates outside of the app
+            for productId in await storeKitCommunicator.listenForTransactionUpdatesAsync() {
+                updateUI { [weak self] in
+                    guard let self else { return }
+                    if !self.purchasedProductIds.contains(productId) {
+                        self.purchasedProductIds.append(productId)
+                    }
+                }
+            }
         }
     }
     
