@@ -1,6 +1,7 @@
 # CHANGELOG
 
-## 0.1.3 (TBD)
+## 0.1.3 (2024-10-31)
+* Verified transactions updated from outside the app are now added to purchasedProductIds.
 
 ## 0.1.2 (2024-10-18)
 * Better use of async context, `fetchAndSync()` significantly faster as a result.
