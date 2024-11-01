@@ -34,9 +34,11 @@ public class PurchaseHelper: ObservableObject {
     /// - Parameters:
     ///   - products: all product ids supported by the app.
     ///   - autoFinishTransactions: call `Transaction.finish()` on verified transactions. `true` by default. Let it be unless you verify your transaction on own backend.
+    ///   - grantExternalEntitlements: will mark product as purchased if it originated from transaction updates for verified transactions
     public init(
         products: [ProductRepresentable],
-        autoFinishTransactions: Bool = true
+        autoFinishTransactions: Bool = true,
+        grantExternalEntitlements: Bool = true
     ) {
         self.allProductIds = products.map { $0.getId() }
         self.storeKitCommunicator = StoreKitCommunicator(autoFinishTransactions: autoFinishTransactions)
@@ -46,7 +48,7 @@ public class PurchaseHelper: ObservableObject {
             for productId in await storeKitCommunicator.listenForTransactionUpdatesAsync() {
                 updateUI { [weak self] in
                     guard let self else { return }
-                    if !self.purchasedProductIds.contains(productId) {
+                    if grantExternalEntitlements && !self.purchasedProductIds.contains(productId) {
                         self.purchasedProductIds.append(productId)
                     }
                 }
