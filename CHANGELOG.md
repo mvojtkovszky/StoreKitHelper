@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.1.4 (2024-11-04
+* Add `grantExternalEntitlements` to constructor, so we can choose whether to give entitlements to purchases verified from outside the app.
+
 ## 0.1.3 (2024-10-31)
 * Verified transactions updated from outside the app are now added to purchasedProductIds.
 
